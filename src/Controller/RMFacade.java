@@ -186,6 +186,8 @@ public class RMFacade {
             this.campeonatosAtivos.put(codigo,aux);
             Synchronizer sync = new Synchronizer(aux);
             this.syncMap.put(codigo,sync);
+            CampeonatoThread campThread = new CampeonatoThread(this.campeonatosAtivos.get(codigo),this.syncMap.get(codigo));
+            campThread.start();
             return sync;
 
         }catch (Exception e){
@@ -212,6 +214,64 @@ public class RMFacade {
 
     public void startCampeonato(){
 
+    }
+
+    public boolean addCampeonato(String nome, ArrayList<String> l){
+        if(l.size()==0){
+            return false;
+        }
+        ArrayList<Circuito> aux = new ArrayList<>();
+        for(String cod : l){
+            aux.add(this.circuitos.get(cod));
+        }
+        Campeonato c = new Campeonato(nome,aux);
+        this.campeonatos.put(genKey(this.campeonatos.keySet()),c);
+        return true;
+    }
+
+
+    public void addPiloto(String nome, String nacionalidade, String cts, String sva){
+        Piloto p = new Piloto(nome,nacionalidade,Double.parseDouble(cts),Double.parseDouble(sva));
+        this.pilotos.put(genKey(this.pilotos.keySet()),p);
+    }
+
+
+    public boolean addCarro(String classe, String marca, String modelo, String cilindrada, String potencia, Integer pEletrico){
+        Carro c = null;
+        Random randomNum = new Random();
+        int rnd = randomNum.nextInt(100);
+        if(classe.equals("GT")){
+            c = new GT(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia));
+        }else if(classe.equals("GTH")){
+            c = new GTH(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia),pEletrico);
+        }else if(classe.equals("PC1")){
+            c = new PC1(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia));
+        }else if(classe.equals("PC1H")){
+            c = new PC1H(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia),pEletrico);
+        }else if(classe.equals("PC2")){
+            c = new PC2(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia),rnd);
+        }else if(classe.equals("PC2H")){
+            c = new PC2H(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia),pEletrico,rnd);
+        }else if(classe.equals("SC")){
+            c = new SC(marca,modelo,Integer.parseInt(cilindrada),Integer.parseInt(potencia));
+        }
+        if(c != null){
+            this.carros.put(genKey(this.carros.keySet()),c);
+            return true;
+        }
+        return false;
+    }
+
+    public static String genKey(Set<String> keys){
+        ArrayList<Integer> aux = new ArrayList<>();
+        String pref = "";
+        for(String k : keys){
+            pref = k.replaceAll("[0-9]","");
+            int value = Integer.parseInt(k.replaceAll("[^0-9]",""));
+            aux.add(value);
+        }
+        int nxt = Collections.max(aux)+1;
+        return pref+nxt;
     }
 }
 
