@@ -1,10 +1,10 @@
 package Controller;
 
 import Model.*;
-import View.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,7 +19,42 @@ public class RMFacade {
     public Map<String,Synchronizer> syncMap;
 
     
+    public void mockData(){
+        Admin a1 = new Admin("admin1","admin1@admin.com","12345");
+        Admin a2 = new Admin("admin2","admin2@admin.com","23456");
+        Jogador j1 = new Jogador("jog1","jog1@jog.com","54321");
+        Jogador j2 = new Jogador("jog2","jog2@jog.com","65432");
+        Jogador j3 = new Jogador("jog3","jog3@jog.com","76543");
+        Jogador j4 = new Jogador("jog4","jog4@jog.com","87654");
+        this.users.put(a1.getEmail(),a1);
+        this.users.put(a2.getEmail(),a2);
+        this.users.put(j1.getEmail(),j1);
+        this.users.put(j2.getEmail(),j2);
+        this.users.put(j3.getEmail(),j3);
+        this.users.put(j4.getEmail(),j4);
 
+        Piloto p1 = new Piloto("Joao Julio","Portugues",0.1,0.9);
+        Piloto p2 = new Piloto("Robert Schimdt","Alemao",0.9,0.1);
+        Piloto p3 = new Piloto("Li Ju Son","Japones",0.4,0.6);
+        this.pilotos.put("pi1",p1);
+        this.pilotos.put("pi2",p2);
+        this.pilotos.put("pi3",p3);
+
+        GT c1 = new GT("Ferrari","California",3500,350);
+        GTH c2 = new GTH("Tesla","X",2000,250,100);
+        PC1 c3 = new PC1("Ford","GT",6000,500);
+        PC1H c4 = new PC1H("Porsche","918 Spyder",6000,500,200);
+        PC2 c5 = new PC2("Lamborghini","Gallardo",4300,400,30);
+        PC2H c6 = new PC2H("Porsche","918 Spyder",4900,500,40,100);
+        SC c7 = new SC("Ford","Focus RS",2500,230);
+        this.carros.put("ca1",c1);
+        this.carros.put("ca2",c2);
+        this.carros.put("ca3",c3);
+        this.carros.put("ca4",c4);
+        this.carros.put("ca5",c5);
+        this.carros.put("ca6",c6);
+        this.carros.put("ca7",c7);
+    }
 
     public RMFacade() {
         this.users = new HashMap<String,User>();
@@ -28,6 +63,7 @@ public class RMFacade {
         this.circuitos = new HashMap<String,Circuito>();
         this.campeonatos = new HashMap<String,Campeonato>();
         this.syncMap = new HashMap<>();
+        mockData();
     }
 
     public String login(String email, String password, DataInputStream is, DataOutputStream os) {
@@ -36,6 +72,7 @@ public class RMFacade {
                 this.users.get(email).setEstado(true);
                 this.users.get(email).setIs(is);
                 this.users.get(email).setOs(os);
+                this.users.get(email).setEstado(true);
                 return email;
             }
         }
@@ -44,9 +81,10 @@ public class RMFacade {
 
     public String register(String nome, String email, String password, DataInputStream is, DataOutputStream os) {
         if(!this.users.containsKey(email)) {
-            this.users.put(email, new User(nome, email, password));
+            this.users.put(email, new Jogador(nome, email, password));
             this.users.get(email).setIs(is);
             this.users.get(email).setOs(os);
+            this.users.get(email).setEstado(true);
             return email;
         }else{
             return "";
@@ -123,7 +161,8 @@ public class RMFacade {
             sb.append("-");
             sb.append(e.getValue());
         }
-        return sb.toString();
+        return "a\nb\nc\nd\ne\nf\ng\nh";
+        //return sb.toString();
     }
 
     public String addFriend(String usrEmail, String friendEmail) {
@@ -178,7 +217,58 @@ public class RMFacade {
 
 class CampeonatoThread extends Thread{
     Campeonato campeonato;
-    public CampeonatoThread(Campeonato c, ReentrantLock l){
+    Synchronizer sync;
+    public CampeonatoThread(Campeonato c, Synchronizer sync){
+        this.campeonato = c;
+        this.sync = sync;
+    }
 
+    public void sendToAllClients(String msg) throws IOException {
+        for(Jogador j : this.campeonato.getJogadores()){
+            j.getOs().writeUTF(msg);
+        }
+    }
+    public void sendToClient(String email,String msg) throws IOException {
+        for(Jogador j : this.campeonato.getJogadores()){
+            if(j.getEmail().equals(email)){
+                j.getOs().writeUTF(msg);
+            }
+        }
+    }
+
+    public String waitClientAnswer(String email) throws IOException {
+        String s = "";
+        for(Jogador j : this.campeonato.getJogadores()){
+            if(j.getEmail().equals(email)){
+                s = j.getIs().readUTF();
+            }
+        }
+        return s;
+    }
+    @Override
+    public void run() {
+        List<Circuito> circuitos = this.campeonato.getCircuitos();
+        ArrayList<Carro> carros = this.campeonato.getCarroList();
+        ArrayList<Piloto> pilotos = this.campeonato.getPilotoList();
+        ArrayList<Corrida> corridas = new ArrayList<>();
+        for(Circuito c : circuitos){
+            int clima = 0;
+            if(Math.random()<0.5){
+                clima = 1;
+            }
+            Corrida corr = new Corrida(carros,pilotos,c,clima);
+            try {
+                sendToAllClients("hereeeee");
+                System.out.println(corr);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /*Run corr.simulaCorrida() 'Falta fazer'
+            * imprimir resultados por volta
+            * deixar cada user mudar cenas
+            * proxima corrida*/
+
+        }
+        this.sync.endCampeonato(); //Retomar threads de clientes
     }
 }

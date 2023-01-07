@@ -125,6 +125,24 @@ public class Campeonato implements Serializable
 
     }
 
+    public ArrayList<Carro> getCarroList(){
+        ArrayList<Carro> aux = new ArrayList<>();
+        for(Jogador j : this.jogadores){
+            aux.add(this.carros.get(j.getEmail()).clone());
+        }
+        Collections.reverse(aux);
+        return aux;
+    }
+
+    public ArrayList<Piloto> getPilotoList(){
+        ArrayList<Piloto> aux = new ArrayList<>();
+        for(Jogador j : this.jogadores){
+            aux.add(this.pilotos.get(j.getEmail()).clone());
+        }
+        Collections.reverse(aux);
+        return aux;
+    }
+
     public void setCorridas(List<Corrida> corridas) {
         this.corridas = corridas;
     }
@@ -415,5 +433,9 @@ public class Campeonato implements Serializable
             sb.append(i+1);sb.append("- ");sb.append(this.corridas.get(i).getCircuito().getNome());
         }
         return sb.toString();
+    }
+
+    public void configCampeonato(){
+
     }
 }

@@ -1,4 +1,4 @@
-package Final;
+package View;
 
 import Controller.*;
 
@@ -65,6 +65,20 @@ class ClientThread extends Thread{
         this.rmf = rmf;
     }
 
+    public void sendListCampeonatos() throws IOException {
+        os.writeUTF("101:"+rmf.listCampeonatos());
+        os.flush();
+    }
+
+    public void sendListPilotos() throws IOException {
+        os.writeUTF("101:"+rmf.listPilotos());
+        os.flush();
+    }
+
+    public void sendListCarros() throws IOException {
+        os.writeUTF("101:"+rmf.listCarros());
+        os.flush();
+    }
     public void run() {
         System.out.println("Client thread started!");
         try{
@@ -77,6 +91,7 @@ class ClientThread extends Thread{
 
         try {
             os.writeUTF(this.menuInicial);
+            os.flush();
             int option = Integer.parseInt(is.readUTF());
 
             HashMap<String,String> resp = null;
@@ -84,32 +99,38 @@ class ClientThread extends Thread{
             switch (option) {
                 case 1 -> {
                     os.writeUTF(this.loginRequest);
-                    resp = parseResp(is.readUTF(), loginRequest);
+                    os.flush();
+                    resp = parseResp(is.readUTF(), loginRequest.split(":")[1]);
                     usrEmail = rmf.login(resp.get("Email"), resp.get("Password"),is,os);
                     if (!usrEmail.equals("")) {
                         if (rmf.emailIsAdmin(usrEmail)) {
                             os.writeUTF(String.format("100:Bem vindo Administrador %s", rmf.getNomeUser(usrEmail)));
+                            os.flush();
                         } else {
                             os.writeUTF(String.format("100:Bem vindo Jogador %s", rmf.getNomeUser(usrEmail)));
+                            os.flush();
                         }
                     } else {
                         os.writeUTF("300:Login Falhado");
+                        os.flush();
 
                     }
                 }
                 case 2 -> {
                     os.writeUTF(this.registerRequest);
-                    resp = parseResp(is.readUTF(), registerRequest);
+                    os.flush();
+                    resp = parseResp(is.readUTF(), registerRequest.split(":")[1]);
                     usrEmail = rmf.register(resp.get("Nome"), resp.get("Email"), resp.get("Password"),is,os);
                     if (!usrEmail.equals("")) {
                         os.writeUTF(String.format("100:Bem vindo Jogador %s", rmf.getNomeUser(usrEmail)));
+                        os.flush();
                     } else {
                         os.writeUTF("300:Registo Falhado");
+                        os.flush();
                     }
                 }
-                default -> os.writeUTF("200");
+                default -> os.writeUTF("500");
             }
-
             if(!usrEmail.equals("")){
                 HashMap<String,String> map;
                 String list = "abcd\nefgh";
@@ -117,17 +138,24 @@ class ClientThread extends Thread{
                 Synchronizer sync;
                 while(rmf.isLoggedIn(usrEmail)){
                     os.writeUTF(menuJogador);
+                    os.flush();
                     option = Integer.parseInt(is.readUTF());
                     switch (option) {
                         case 1 -> {
                             os.writeUTF(newFriendRequest);
-                            map = parseResp(is.readUTF(), newFriendRequest);
+                            os.flush();
+                            map = parseResp(is.readUTF(), newFriendRequest.split(":")[1]);
                             rsp = rmf.addFriend(usrEmail, map.get("Email"));
                             os.writeUTF(rsp);
+                            os.flush();
                         }
                         case 2 -> {
+                            sendListCampeonatos();
+                            sendListCarros();
+                            sendListPilotos();
                             os.writeUTF(configCampeonatoRequest);
-                            map = parseResp(is.readUTF(), configCampeonatoRequest);
+                            os.flush();
+                            map = parseResp(is.readUTF(), configCampeonatoRequest.split(":")[1]);
                             Random random = new Random();
                             String codigo = random.ints(97, 122 + 1)
                                     .limit(6)
@@ -136,42 +164,50 @@ class ClientThread extends Thread{
                             sync = rmf.configCampeonato(usrEmail, map.get("Campeonato"), map.get("Carro"), map.get("Piloto"), map.get("NJogadores"),codigo);
                             if(sync != null){
                                 os.writeUTF("202:Campeonato configurado\nCodigo: "+codigo);
+                                os.flush();
                                 sync.waitCampeonato();
                             }else{
-                                os.writeUTF("300");
+                                os.writeUTF("300:Configuracao de campeonato");
+                                os.flush();
                             }
                         }
                         case 3 -> {
                             os.writeUTF(joinCampeonatoRequest);
-                            map = parseResp(is.readUTF(), joinCampeonatoRequest);
+                            os.flush();
+                            map = parseResp(is.readUTF(), joinCampeonatoRequest.split(":")[1]);
                             sync = rmf.joinCampeonato(usrEmail, map.get("Codigo"), map.get("Carro"), map.get("Piloto"));
                             if(sync != null){
-                                os.writeUTF("202:Entrou no campeonato\n");
+                                os.writeUTF("100:Entrou no campeonato\n");
+                                os.flush();
+                                sync.waitCampeonato();
+                            }else{
+                                os.writeUTF("300:A entrar no campeonato");
+                                os.flush();
                             }
                         }
                         case 4 -> {
                             list = rmf.listAmigos(usrEmail);
-                            os.writeUTF(list);
+                            os.writeUTF("101:"+list);
+                            os.flush();
                         }
                         case 5 -> {
-                            list = rmf.listCampeonatos();
-                            os.writeUTF(list);
+                            sendListCampeonatos();
                         }
                         case 6 -> {
                             list = rmf.listCircuitos();
-                            os.writeUTF(list);
+                            os.writeUTF("101:"+list);
+                            os.flush();
                         }
                         case 7 -> {
-                            list = rmf.listPilotos();
-                            os.writeUTF(list);
+                            sendListPilotos();
                         }
                         case 8 -> {
-                            list = rmf.listCarros();
-                            os.writeUTF(list);
+                            sendListCarros();
                         }
                         default -> {
                             rmf.logout(usrEmail);
                             os.writeUTF("500");
+                            os.flush();
                         }
                     }
                 }
@@ -204,11 +240,13 @@ class ClientThread extends Thread{
     }
     public static HashMap<String,String> parseResp(String recv, String struct){
         String[] recvArr = recv.split(",");
-        String[] structArr = recv.split(" ");
+        String[] structArr = struct.split(" ");
+        System.out.println(Arrays.toString(recvArr));
+        System.out.println(Arrays.toString(structArr));
 
         HashMap<String,String> aux = new HashMap<>();
         for(int i = 0; i < recvArr.length; i++){
-            aux.put(recvArr[i],structArr[i]);
+            aux.put(structArr[i],recvArr[i]);
         }
         return aux;
     }

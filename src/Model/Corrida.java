@@ -23,6 +23,7 @@ public class Corrida implements Serializable
 {
    //variaveis de instancia
    private List<Carro> listaCarros;
+   private List<Piloto> listaPilotos;
    private Circuito circuito;
    private Set<Carro> resultados;
    //private Map<Carro,Long> bestLap;
@@ -34,6 +35,7 @@ public class Corrida implements Serializable
    public Corrida()
    {
        this.listaCarros = new ArrayList<Carro>();
+       this.listaPilotos = new ArrayList<Piloto>();
        this.circuito = new Circuito();
        this.resultados = new TreeSet<Carro>();
        //this.bestLap = new HashMap<Carro,Long>();
@@ -45,22 +47,18 @@ public class Corrida implements Serializable
    }
    
    
-   public Corrida(List<Carro> l, Circuito c, Set<Carro> r, List<Carro> p, int clima)
+   public Corrida(List<Carro> lc, List<Piloto> lp, Circuito c, int clima)
    {
        this();
-       for(Carro car: l)
+       for(Carro car: lc)
        {
            this.listaCarros.add(car);
        }
+       for(Piloto pil: lp)
+       {
+           this.listaPilotos.add(pil);
+       }
        this.circuito = c.clone();
-       for(Carro car: r)
-       {
-           this.resultados.add(car.clone());
-       }
-       for(Carro x : p)
-       {
-           this.primeiroVolta.add(x.clone());
-       }
        this.clima = clima;
    }
    

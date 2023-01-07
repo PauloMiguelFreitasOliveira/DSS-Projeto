@@ -171,7 +171,7 @@ package Model;
      /**
       * Tempo em milisegundos de uma volta
       */
-     /*public long tempoProximaVolta(Circuito c, int clima, int volta)
+     /*public long tempoProximaVolta(Circuito c, int clima, int volta, Piloto p)
      {
          Piloto p1 = this.getEquipa().getPiloto1();
          Piloto p2 = this.getEquipa().getPiloto2();
