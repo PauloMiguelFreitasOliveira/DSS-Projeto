@@ -18,10 +18,11 @@ public class PC2H extends PC2 implements Hibrido
         this.motor_eletrico = 0;
     }
     
-    public PC2H(String marca, String modelo, int cilindrada, int potencia, int p_mecanica, int eletrico)
-    {
+    public PC2H(String marca, String modelo, int cilindrada, int potencia, int p_mecanica, int eletrico) {
         super(marca,modelo,cilindrada,potencia,p_mecanica);
         this.motor_eletrico = eletrico;
+        int d = (int) ((5000-cilindrada)*0.0075);
+        this.setFiabilidade(80-d);
     }
     
     public PC2H(PC2H p)

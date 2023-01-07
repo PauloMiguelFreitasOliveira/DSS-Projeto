@@ -19,6 +19,7 @@ public class PC1 extends Carro
     public PC1(String marca, String modelo, int cilindrada, int potencia)
     {
         super(marca,modelo,cilindrada,potencia,0.0);
+        this.setFiabilidade(95);
     }
     
     public PC1(PC1 p)
@@ -34,9 +35,8 @@ public class PC1 extends Carro
     public boolean DNF(int volta,int totalvoltas,int clima)
     {
        Random rand=new Random();
-       int x=rand.nextInt(87);
+       int x=rand.nextInt(100);
        return (x > super.getFiabilidade());
-       //return false;
     }
     
     public boolean equals(Object o)

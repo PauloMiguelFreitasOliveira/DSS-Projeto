@@ -8,20 +8,19 @@ package Model;
 
 import java.util.Random;
 
-public class GTH extends GT implements Hibrido
-{
+public class GTH extends GT implements Hibrido{
     private int motor_eletrico;
     
-    public GTH()
-    {
+    public GTH() {
         super();
         this.motor_eletrico = 0;
     }
     
-    public GTH(String marca, String modelo, int cilindrada, int potencia,int eletrico)
-    {
+    public GTH(String marca, String modelo, int cilindrada, int potencia,int eletrico) {
         super(marca,modelo,cilindrada,potencia);
         this.motor_eletrico = eletrico;
+        int d = (int) ((4000-cilindrada)*0.0075);
+        this.setFiabilidade(90-d);
     }
     
     public GTH(GTH p)
@@ -47,14 +46,11 @@ public class GTH extends GT implements Hibrido
     
     public boolean DNF(int volta,int totalvoltas,int clima)
     {
-       Random rand=new Random();
-       int x=rand.nextInt(70);
-       int motorh = this.getPotenciaMotorEletrico()/20; 
-       //no maximo fiabilidade de 85%
-       // 3000 cilindrada = 85% / 4500 cilindrada = 57%
-       int fiabilidade = (int)((100000/super.getCilindrada())*2.55);
-       int desgaste = (int)((volta+1)*0.5); //0.5% a cada volta
-       return (x > (fiabilidade - desgaste - motorh));
+        Random rand=new Random();
+        int x=rand.nextInt(100);
+        int motorh = this.getPotenciaMotorEletrico()/30;
+        int desgaste = (int)(volta + 1); //1% a cada volta
+        return (x > (this.getFiabilidade() - desgaste - motorh));
     }
     
     public boolean equals(Object o)

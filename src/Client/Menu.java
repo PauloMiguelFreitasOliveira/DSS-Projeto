@@ -38,11 +38,10 @@ public class Menu {
         int op;
         System.out.print("Opção: ");
         try {
-            op = is.nextInt();
+            op = Integer.parseInt(is.nextLine());
         }
-        catch (InputMismatchException e) {
+        catch (Exception e) {
             op = -1;
-            System.out.println(e.toString());
         }
         if (op<0 || op>this.opcoes.size()) {
             System.out.println("Opção Inválida!!!");

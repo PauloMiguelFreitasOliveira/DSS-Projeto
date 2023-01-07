@@ -5,6 +5,7 @@
  * @version (a version number or a date)
  */
 package Model;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
@@ -14,32 +15,25 @@ public class Circuito implements Serializable
     /* Variaveis instancia */
     private String nome;
     private int distancia;
-    private Map<String,Integer> layoutGDU; //'ch'-2 (chincane com gdu de 2); 'c'-1 (curva com gdu de 1); 'r'-3 (reta com gdu de 3)
+    private LinkedHashMap<String,Integer> layoutGDU; //'ch'-2 (chincane com gdu de 2); 'c'-1 (curva com gdu de 1); 'r'-3 (reta com gdu de 3)
     private int voltas;
 
     /* Construtores */
     public Circuito(){
         this.nome = "";
         this.distancia = 0;
-        this.layoutGDU = new HashMap<String, Integer>();
+        this.layoutGDU = new LinkedHashMap<String, Integer>();
         this.voltas = 0;
     }
     
-    public Circuito(String n,int d, Map<String, Integer> m, int v){
+    public Circuito(String n,int d, LinkedHashMap<String, Integer> m, int v){
         this.nome = n;
         this.distancia = d;
-        if(m == null){
-            this.layoutGDU = new HashMap<String, Integer>();
+        LinkedHashMap<String,Integer> aux = new LinkedHashMap<>();
+        for(String g : m.keySet()) {
+            aux.put(g, m.get(g));
         }
-        else
-        {
-            HashMap<String,Integer> aux = new HashMap<String, Integer>();
-            for(String g : m.keySet())
-            {
-                aux.put(g, m.get(g));
-            }
-            this.layoutGDU = aux;
-        }
+        this.layoutGDU = aux;
         this.voltas = v;
     }
     
@@ -63,8 +57,8 @@ public class Circuito implements Serializable
         return this.voltas;
     }
     
-    public Map<String,Integer> getLayoutGDU(){
-        HashMap<String,Integer> aux = new HashMap<String, Integer>();
+    public LinkedHashMap<String,Integer> getLayoutGDU(){
+        LinkedHashMap<String,Integer> aux = new LinkedHashMap<String, Integer>();
         for(String g : this.layoutGDU.keySet()){
             aux.put(g, this.layoutGDU.get(g));
         }
@@ -83,8 +77,8 @@ public class Circuito implements Serializable
         this.voltas = v;
     }
     
-    public void setLayoutGDU(Map<String,Integer> m){
-        this.layoutGDU = new HashMap<>();
+    public void setLayoutGDU(LinkedHashMap<String,Integer> m){
+        this.layoutGDU = new LinkedHashMap<>();
         for(String g : m.keySet()){
             this.layoutGDU.put(g, m.get(g));
         }
@@ -99,27 +93,23 @@ public class Circuito implements Serializable
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nNome: ");sb.append(this.nome);
-        sb.append("\nDistancia: ");sb.append(this.distancia);
-        sb.append("\nNumero de voltas: ");sb.append(this.voltas);
+        sb.append("Nome-");sb.append(this.nome);
+        sb.append("\tDistancia-");sb.append(this.distancia);
+        sb.append("\tNumero de voltas-");sb.append(this.voltas);
         //sb.append("\nTempo Medio: ");sb.append(TimeConverter.toTimeFormat(this.tempoMedio));
         return sb.toString();
     }
     
-    public boolean equals(Object o)
-    {
-       if(this == o)
-       return true;
-       
-       if(o == null || this.getClass() != o.getClass())
-       return false;
-       
-       Circuito c = (Circuito) o;
-       return ( this.nome.equals(c.getNome()) &&
-                this.distancia == c.getDistancia() &&
-                this.voltas == c.getVoltas()
-                //this.tempoMedio == c.getTempoMedio() &&
-                );
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+
+        if(o == null || this.getClass() != o.getClass())
+            return false;
+
+        Circuito c = (Circuito) o;
+        return ( this.nome.equals(c.getNome()) &&
+            this.distancia == c.getDistancia() &&
+            this.voltas == c.getVoltas());
     }
-    
 }

@@ -2,7 +2,6 @@ package Model;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
 
 public class User {
     public String nome;

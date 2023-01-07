@@ -85,10 +85,10 @@ public class Piloto implements Serializable
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nNome: "); sb.append(this.nome);
-        sb.append("\tNacionalidade: ");sb.append(this.nacionalidade);
-        sb.append("\tCTS: ");sb.append(this.cts);
-        sb.append("\tSVA: ");sb.append(this.sva);
+        sb.append("Nome-"); sb.append(this.nome);
+        sb.append("\tNacionalidade-");sb.append(this.nacionalidade);
+        sb.append("\tCTS-");sb.append(this.cts);
+        sb.append("\tSVA-");sb.append(this.sva);
         return sb.toString();
     }
     

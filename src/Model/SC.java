@@ -19,6 +19,7 @@ public class SC extends Carro
     public SC(String marca, String modelo, int cilindrada, int potencia)
     {
         super(marca,modelo,cilindrada,potencia,0.0);
+        this.setFiabilidade(95);
     }
     
     public SC(SC p)

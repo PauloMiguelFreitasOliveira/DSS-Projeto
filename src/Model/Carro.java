@@ -111,6 +111,9 @@ package Model;
      {
          this.pac = pac;
      }
+     public void setFiabilidade(int fia){
+         this.fiabilidade = fia;
+     }
      
      public void setTempo(long t)
      {
@@ -127,24 +130,21 @@ package Model;
      public String toString()
      {
          StringBuilder sb = new StringBuilder();
-         sb.append("\nMarca: ");sb.append(this.marca);
-         sb.append("\nModelo: ");sb.append(this.modelo);
-         sb.append("\nCilindrada: ");sb.append(this.cilindrada);
-         sb.append("\nPotencia: ");sb.append(this.potencia);
-         sb.append("\nPAC: ");sb.append(this.pac);
-         sb.append("\nFiabiliade: ");sb.append(this.fiabilidade);
-         sb.append("\nTempo: ");sb.append(this.tempo);
-         sb.append("\nDNF: ");sb.append(this.dnf);
+         sb.append("Marca- ");sb.append(this.marca);
+         sb.append("\tModelo- ");sb.append(this.modelo);
+         sb.append("\tCilindrada- ");sb.append(this.cilindrada);
+         sb.append("\tPotencia- ");sb.append(this.potencia);
+         sb.append("\tPAC- ");sb.append(this.pac);
          return sb.toString();
      }
      
      public boolean equals(Object o)
      {
          if(this==o)
-         return true;
+            return true;
          
          if(o==null || this.getClass()!=o.getClass())
-         return false;
+            return false;
          
          Carro c = (Carro) o;
          return( this.marca.equals(c.getMarca()) &&

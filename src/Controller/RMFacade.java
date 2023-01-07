@@ -6,7 +6,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class RMFacade {
 
@@ -15,7 +14,7 @@ public class RMFacade {
     public Map<String,Carro> carros;
     public Map<String,Circuito> circuitos;
     public Map<String,Campeonato> campeonatos;
-    public Map<String,Campeonato> campeonatosAtivos;
+    //public Map<String,Campeonato> campeonatosAtivos;
     public Map<String,Synchronizer> syncMap;
 
     
@@ -54,6 +53,36 @@ public class RMFacade {
         this.carros.put("ca5",c5);
         this.carros.put("ca6",c6);
         this.carros.put("ca7",c7);
+
+        LinkedHashMap<String,Integer> aux = new LinkedHashMap<>();
+        aux.put("r1",0);
+        aux.put("c1",1);
+        aux.put("r2",0);
+        aux.put("ch1",2);
+        aux.put("r3",0);
+        aux.put("c2",2);
+        aux.put("r4",0);
+        Circuito ci1 = new Circuito("Suzuki circuit",12,aux,2);
+
+        LinkedHashMap<String,Integer> aux1 = new LinkedHashMap<>();
+        aux.put("r1",0);
+        aux.put("ch1",2);
+        aux.put("r2",0);
+        aux.put("c1",2);
+        aux.put("r3",0);
+        aux.put("c2",2);
+        aux.put("r4",0);
+        aux.put("c3",2);
+        aux.put("r5",0);
+        Circuito ci2 = new Circuito("Honda circuit",11,aux1,2);
+
+        this.circuitos.put("ci1",ci1);
+        this.circuitos.put("ci2",ci2);
+        ArrayList<Circuito> au = new ArrayList<>();
+        au.add(ci1);
+        au.add(ci2);
+        Campeonato ca1 = new Campeonato("DSS GP",au);
+        this.campeonatos.put("cp1",ca1);
     }
 
     public RMFacade() {
@@ -62,6 +91,7 @@ public class RMFacade {
         this.carros = new HashMap<String,Carro>();
         this.circuitos = new HashMap<String,Circuito>();
         this.campeonatos = new HashMap<String,Campeonato>();
+        //this.campeonatosAtivos = new HashMap<String,Campeonato>();
         this.syncMap = new HashMap<>();
         mockData();
     }
@@ -100,7 +130,10 @@ public class RMFacade {
     }
 
     public boolean emailIsAdmin(String email) {
-        return this.users.containsKey(email);
+        if(this.users.containsKey(email)){
+            if(this.users.get(email) instanceof Admin) return true;
+        }
+        return false;
     }
 
     public boolean isLoggedIn(String email) {
@@ -108,7 +141,7 @@ public class RMFacade {
     }
 
     public String listAmigos(String email) {
-        StringBuilder sb = new StringBuilder("100:");
+        StringBuilder sb = new StringBuilder();
         if(this.users.get(email) instanceof Jogador j) {
             for (String a : j.getAmigos()) {
                 sb.append(a);
@@ -120,7 +153,7 @@ public class RMFacade {
     }
 
     public String listCampeonatos() {
-        StringBuilder sb = new StringBuilder("100:");
+        StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String,Campeonato> e : this.campeonatos.entrySet()) {
             sb.append(e.getKey());
@@ -131,18 +164,18 @@ public class RMFacade {
     }
 
     public String listCircuitos() {
-        StringBuilder sb = new StringBuilder("100:");
+        StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String,Circuito> e : this.circuitos.entrySet()) {
             sb.append(e.getKey());
             sb.append("-");
-            sb.append(e.getValue());
+            sb.append(e.getValue()).append("\n");
         }
         return sb.toString();
     }
 
     public String listCarros() {
-        StringBuilder sb = new StringBuilder("100:");
+        StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String,Carro> e : this.carros.entrySet()) {
             sb.append(e.getKey());
@@ -154,15 +187,13 @@ public class RMFacade {
     }
 
     public String listPilotos() {
-        StringBuilder sb = new StringBuilder("100:");
-
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String,Piloto> e : this.pilotos.entrySet()) {
             sb.append(e.getKey());
             sb.append("-");
-            sb.append(e.getValue());
+            sb.append(e.getValue()).append("\n");
         }
-        return "a\nb\nc\nd\ne\nf\ng\nh";
-        //return sb.toString();
+        return sb.toString();
     }
 
     public String addFriend(String usrEmail, String friendEmail) {
@@ -183,10 +214,10 @@ public class RMFacade {
         try {
             Campeonato aux = new Campeonato(this.campeonatos.get(idCampeonato));
             aux.configCampeonato((Jogador) this.users.get(usrEmail), this.carros.get(idCarro), this.pilotos.get(idPiloto), Integer.parseInt(nJogadores));
-            this.campeonatosAtivos.put(codigo,aux);
+            aux.setRunning(true);
             Synchronizer sync = new Synchronizer(aux);
             this.syncMap.put(codigo,sync);
-            CampeonatoThread campThread = new CampeonatoThread(this.campeonatosAtivos.get(codigo),this.syncMap.get(codigo));
+            CampeonatoThread campThread = new CampeonatoThread(this.syncMap.get(codigo));
             campThread.start();
             return sync;
 
@@ -197,24 +228,19 @@ public class RMFacade {
     }
 
     public Synchronizer joinCampeonato(String email, String codigo, String idCarro, String idPiloto){
-        if(this.campeonatosAtivos.containsKey(codigo) && this.carros.containsKey(idCarro) && this.pilotos.containsKey(idPiloto)){
-            Campeonato cpo = this.campeonatosAtivos.get(codigo);
+        if(this.syncMap.containsKey(codigo) && this.carros.containsKey(idCarro) && this.pilotos.containsKey(idPiloto)){
+            Campeonato cpo = this.syncMap.get(codigo).camp;
             if(this.users.get(email) instanceof Jogador j){
-                if(!cpo.isRunning()){
-                   cpo.addJogador(j,this.carros.get(idCarro),this.pilotos.get(idPiloto));
-                   if(cpo.getJogadores().size()==cpo.getNJogadores()){
-                       startCampeonato();
-                       return this.syncMap.get(codigo);
-                   }
+                if(cpo.isRunning()){
+                    cpo.addJogador(j,this.carros.get(idCarro),this.pilotos.get(idPiloto));
+                    this.syncMap.get(codigo).playerJoin();
+                    return this.syncMap.get(codigo);
                 }
             }
         }
         return null;
     }
 
-    public void startCampeonato(){
-
-    }
 
     public boolean addCampeonato(String nome, ArrayList<String> l){
         if(l.size()==0){
@@ -276,20 +302,18 @@ public class RMFacade {
 }
 
 class CampeonatoThread extends Thread{
-    Campeonato campeonato;
     Synchronizer sync;
-    public CampeonatoThread(Campeonato c, Synchronizer sync){
-        this.campeonato = c;
+    public CampeonatoThread(Synchronizer sync){
         this.sync = sync;
     }
 
     public void sendToAllClients(String msg) throws IOException {
-        for(Jogador j : this.campeonato.getJogadores()){
+        for(Jogador j : this.sync.camp.getJogadores()){
             j.getOs().writeUTF(msg);
         }
     }
     public void sendToClient(String email,String msg) throws IOException {
-        for(Jogador j : this.campeonato.getJogadores()){
+        for(Jogador j : this.sync.camp.getJogadores()){
             if(j.getEmail().equals(email)){
                 j.getOs().writeUTF(msg);
             }
@@ -298,7 +322,7 @@ class CampeonatoThread extends Thread{
 
     public String waitClientAnswer(String email) throws IOException {
         String s = "";
-        for(Jogador j : this.campeonato.getJogadores()){
+        for(Jogador j : this.sync.camp.getJogadores()){
             if(j.getEmail().equals(email)){
                 s = j.getIs().readUTF();
             }
@@ -307,19 +331,26 @@ class CampeonatoThread extends Thread{
     }
     @Override
     public void run() {
-        List<Circuito> circuitos = this.campeonato.getCircuitos();
-        ArrayList<Carro> carros = this.campeonato.getCarroList();
-        ArrayList<Piloto> pilotos = this.campeonato.getPilotoList();
+        System.out.println("Campeonato Thread running");
+        try {
+            this.sync.waitFull();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        List<Circuito> circuitos = this.sync.camp.getCircuitos();
+        ArrayList<Carro> carros = this.sync.camp.getCarroList();
+        ArrayList<Piloto> pilotos = this.sync.camp.getPilotoList();
+        ArrayList<String> usernames = this.sync.camp.getUsernameList();
         ArrayList<Corrida> corridas = new ArrayList<>();
         for(Circuito c : circuitos){
             int clima = 0;
             if(Math.random()<0.5){
                 clima = 1;
             }
-            Corrida corr = new Corrida(carros,pilotos,c,clima);
+            Corrida corr = new Corrida(carros,pilotos,c,clima,usernames);
             try {
-                sendToAllClients("hereeeee");
-                System.out.println(corr);
+                String msg = "205:"+"Inicio da corrida no circuito "+corr.getCircuito().getNome()+"("+corr.getCircuito().getVoltas()+" voltas)\n"+corr.simulaCorrida();
+                sendToAllClients(msg);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -329,6 +360,9 @@ class CampeonatoThread extends Thread{
             * proxima corrida*/
 
         }
+        this.sync.camp.setRunning(false);
+
+        System.out.println("Campeonato Thread exiting");
         this.sync.endCampeonato(); //Retomar threads de clientes
     }
 }

@@ -1,12 +1,4 @@
 package Model;
-/**
- * Write a description of class PC2 here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
-
-import java.util.Map;
 import java.util.Random;
 
 public class PC2 extends Carro
@@ -22,6 +14,8 @@ public class PC2 extends Carro
     {
         super(marca,modelo,cilindrada,potencia,0.0);
         this.preparacao_mecanica = p_mecanica;
+        int d = (int) ((5000-cilindrada)*0.0075);
+        this.setFiabilidade(80-d);
     }
     
     public PC2(PC2 p)
@@ -40,11 +34,9 @@ public class PC2 extends Carro
         return new PC2(this);
     }
     
-    public boolean DNF(int volta,int totalvoltas,int clima)
-    {
+    public boolean DNF(int volta,int totalvoltas,int clima) {
        Random rand=new Random();
-       int x=rand.nextInt(85);
-       //no maximo fiabilidade de 85%
+       int x=rand.nextInt(100);
        int fiabilidade = super.getFiabilidade() + (super.getCilindrada()/1200) + (this.preparacao_mecanica/10);
        return (x > fiabilidade);
     }
@@ -52,10 +44,10 @@ public class PC2 extends Carro
     public boolean equals(Object o)
     {
         if(this==o)
-        return true;
+            return true;
         
         if(o==null || this.getClass()!=o.getClass())
-        return false;
+            return false;
         
         PC2 c = (PC2) o;
         return ( super.equals(c)

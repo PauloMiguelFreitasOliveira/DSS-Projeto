@@ -10,8 +10,6 @@ import java.util.Collections;
 //import java.util.LinkedList;
 import java.io.Serializable;
 
-//import java.io.ObjectInputStream.GetField;
-
 public class Campeonato implements Serializable
 {   
     private String nome;
@@ -27,8 +25,7 @@ public class Campeonato implements Serializable
     private int prova;
     private boolean running;
     
-    public Campeonato()
-    {
+    public Campeonato() {
         this.nome = "";
         this.circuitos = new ArrayList<>();
         this.criador = null;
@@ -46,17 +43,26 @@ public class Campeonato implements Serializable
     {
         this.nome = nome;
         this.circuitos = circuitos;
+        this.jogadores = new ArrayList<>();
+        this.carros = new HashMap<>();
+        this.pilotos = new HashMap<>();
+        this.corridas = new ArrayList<>();
+        this.classificacao = new HashMap<String,Integer>();
+        this.prova = 0;
+        this.running = false;
     }
     
     public Campeonato(Campeonato c)
     {
         this.nome = c.getNome();
         this.circuitos = c.getCircuitos();
-        this.criador = c.getCriador();
-        this.nJogadores = c.getNJogadores();
-        this.jogadores = c.getJogadores();
-        this.corridas = c.getCorridas();
-        this.classificacao = c.getClassificacao();
+        this.jogadores = new ArrayList<>();
+        this.carros = new HashMap<>();
+        this.pilotos = new HashMap<>();
+        this.corridas = new ArrayList<>();
+        this.classificacao = new HashMap<String,Integer>();
+        this.prova = 0;
+        this.running = false;
     }
     
     public String getNome(){
@@ -84,12 +90,21 @@ public class Campeonato implements Serializable
     }
 
     public Map<String, Integer> getClassificacao(){
+        if(this.classificacao == null) return null;
         HashMap<String,Integer> aux = new HashMap<String,Integer>();
         for(String c : this.classificacao.keySet())
         {
             aux.put(c, this.classificacao.get(c));
         }
         return aux;
+    }
+
+    public boolean isFull(){
+        return this.jogadores.size() >= this.nJogadores;
+    }
+
+    public String filled(){
+        return this.jogadores.size()+"/"+this.nJogadores;
     }
 
     public boolean isRunning() {
@@ -134,6 +149,10 @@ public class Campeonato implements Serializable
         return aux;
     }
 
+    public Map<String, Piloto> getPilotos() {
+        return pilotos;
+    }
+
     public ArrayList<Piloto> getPilotoList(){
         ArrayList<Piloto> aux = new ArrayList<>();
         for(Jogador j : this.jogadores){
@@ -141,6 +160,19 @@ public class Campeonato implements Serializable
         }
         Collections.reverse(aux);
         return aux;
+    }
+
+    public ArrayList<String> getUsernameList(){
+        ArrayList<String> aux = new ArrayList<>();
+        for(Jogador j : this.jogadores){
+            aux.add(j.getNome());
+        }
+        Collections.reverse(aux);
+        return aux;
+    }
+
+    public Map<String, Carro> getCarros() {
+        return carros;
     }
 
     public void setCorridas(List<Corrida> corridas) {
@@ -171,30 +203,7 @@ public class Campeonato implements Serializable
     {
         this.corridas.add(c.clone());
     }
-    
-    /**
-     * Simular proxima corrida
-     */
-    /*public String simularProximaCorrida()
-    {
-        //StringBuilder sb = new StringBuilder();
-        String res;
-        if(this.corridas.size() == this.prova)
-        {
-            //sb.append("\nNÃO HÁ CORRIDAS POR REALIZAR!!!");
-            res = "\nNÃO HÁ CORRIDAS POR REALIZAR!!!";
-        }
-        else
-        {
-            this.corridas.get(this.prova).simulaCorrida();
-            //sb.append(this.corridas.get(this.prova).printResultados());
-            res = this.corridas.get(this.prova).printResultados();
-            this.prova++;
-        }
-        
-        //return sb.toString();
-        return res;
-    }*/
+
     
     /**
      * Obter corrida nr x
@@ -220,207 +229,7 @@ public class Campeonato implements Serializable
         }
         return sb.toString();
     }
-    
-    /**
-     * Lista a classificacao atual
-     */
-    /*public String printClassificacao()
-    {
-        //chamo o ordena e faço print!!
-        List<Map.Entry<String, Integer>> aux = this.ordenaClassificacao(this.classificacao);
-        StringBuilder sb = new StringBuilder();
-        sb.append("\nClassificacao Geral");
-        sb.append("\n=========================");
-        for(int i=0;i<aux.size();i++)
-        {
-            sb.append("\n");
-            sb.append(i+1);sb.append("º: ");sb.append(aux.get(i));
-            //sb.append("\t");sb.append(aux.get(i));
-            //i++;
-        }
-        List<Map.Entry<String, Integer>> aux2 = this.ordenaClassificacao(this.classificacaoH);
-        sb.append("\n\nClassificacao Geral Hibrido");
-        sb.append("\n=========================");
-        for(int i=0;i<aux2.size();i++)
-        {
-            sb.append("\n");
-            sb.append(i+1);sb.append("º: ");sb.append(aux2.get(i));
-            //sb.append("\t");sb.append(aux.get(i));
-            //i++;
-        }
-        return sb.toString();
-    }*/
-    
-    /**
-     * Atualizar classificacao campeonato
-     */
-    /*public void atualizarClassificacao()
-    {
-            int i = this.prova-1;
-            Set<Carro> aux = this.corridas.get(i).getResultados();
-            int x=4, old_value;
-            for(Carro c : aux)
-            {    
-                if(!(c instanceof Hibrido))
-                {
-                old_value = 0;
-                String g = c.getMarca()+" "+c.getModelo() +" \t"+c.getEquipa().getNome()+" \t"+c.getClass().getName();
-                if(this.classificacao.containsKey(g))
-                {
-                    old_value = this.classificacao.get(g);
-                }
-                if(x==4)
-                {
-                    this.classificacao.put(g, old_value+16);
-                }
-                if(x==3)
-                {
-                   this.classificacao.put(g, old_value+8);
-                }
-                if(x==2)
-                {
-                   this.classificacao.put(g, old_value+4);
-                }
-                if(x==1)
-                {
-                   this.classificacao.put(g, old_value+2);
-                }
-                if(x==0)
-                {
-                   this.classificacao.put(g, old_value+1);
-                }
-                if(x<0)
-                {
-                   this.classificacao.put(g, 0+old_value); 
-                }
-                x--;
-                }
-            }
-            
-            Map<Carro,Integer> aux2 = this.corridas.get(i).getDNF();
-            for(Carro q : aux2.keySet())
-            {
-                if(!(q instanceof Hibrido))
-                {
-                    old_value = 0;
-                    String a = q.getMarca()+" "+q.getModelo() +" \t"+q.getEquipa().getNome()+" \t"+q.getClass().getName();
-                    if(this.classificacao.containsKey(a))
-                        old_value = this.classificacao.get(a);
-                    this.classificacao.put(a,0+old_value);
-                }
-            }
-    }*/
-    
-    /**
-     * Atualizar classificacao campeonato hibrido
-     */
-    /*public void atualizarClassificacaoHibrido()
-    {
-            int i = this.prova-1;
-            Set<Carro> aux = this.corridas.get(i).getResultados();
-            int x=4, old_value;
-            for(Carro c : aux)
-            { 
-                if(c instanceof Hibrido)
-                {
-                old_value = 0;
-                String g = c.getMarca()+" "+c.getModelo() +" \t"+c.getEquipa().getNome()+" \t"+c.getClass().getName();
-                if(this.classificacaoH.containsKey(g))
-                {
-                    old_value = this.classificacaoH.get(g);
-                }
-                if(x==4)
-                {
-                    this.classificacaoH.put(g, old_value+16);
-                }
-                if(x==3)
-                {
-                   this.classificacaoH.put(g, old_value+8);
-                }
-                if(x==2)
-                {
-                   this.classificacaoH.put(g, old_value+4);
-                }
-                if(x==1)
-                {
-                   this.classificacaoH.put(g, old_value+2);
-                }
-                if(x==0)
-                {
-                   this.classificacaoH.put(g, old_value+1);
-                }
-                if(x<0)
-                {
-                   this.classificacaoH.put(g, 0+old_value); 
-                }
-                x--;
-                }
-            }
-            
-            Map<Carro,Integer> aux2 = this.corridas.get(i).getDNF();
-            for(Carro q : aux2.keySet())
-            {
-                if(q instanceof Hibrido)
-                {
-                    old_value = 0;
-                    String a = q.getMarca()+" "+q.getModelo() +" \t"+q.getEquipa().getNome()+" \t"+q.getClass().getName();
-                    if(this.classificacaoH.containsKey(a))
-                        old_value = this.classificacaoH.get(a);
-                    this.classificacaoH.put(a,0+old_value);
-                }
-            }
-    }
-    
-    private List<Map.Entry<String, Integer>> ordenaClassificacao(Map<String,Integer> classificacao)
-    {
-        List<Map.Entry<String, Integer>> ordenado = new ArrayList<Map.Entry<String, Integer>>(classificacao.entrySet());
-        Collections.sort(ordenado, new Comparator<Map.Entry<String, Integer>>() 
-        {
-            public int compare(Map.Entry<String, Integer> e1, Map.Entry<String, Integer> e2) 
-            {
-                return e2.getValue().compareTo(e1.getValue());
-            }
-        });
-        return ordenado;
-    }
-    
-    /**
-     * Info corrida x
-     */
-    /*public String resultadosCorrida(int x)
-    {
-        //StringBuilder sb = new StringBuilder();
-        //if(this.prova < x)
-        //{
-          //  String s = ("\nA prova escolhida não existe ou ainda não foi realizada!");
-            //return s;
-        //}
-        //else
-        //{
-        return this.getCorrida(x).printResultados();
-        //}
-        //return sb.toString();
-    }*/
-    
-    /**
-     * Verificar se corrida já foi realizada
-     */
-    public boolean corridaRealizada(int x)
-    {
-        return ((x-1) < this.prova);
-    }
-    
-    /**
-     * Lista Carros a participar em proxa nr x
-     */
-    /*public String listaParticipantes(int x)
-    {
-        StringBuilder sb = new StringBuilder();
-        Corrida aux = this.corridas.get((x-1));
-        sb.append(aux.listaCarrosParticipantes());
-        return sb.toString();
-    }*/
-    
+
     /**
      * Lista Circuitos
      */
@@ -435,7 +244,19 @@ public class Campeonato implements Serializable
         return sb.toString();
     }
 
-    public void configCampeonato(){
+    public String circuitosToString(){
+        StringBuilder sb = new StringBuilder();
+        for(Circuito c : circuitos){
+            sb.append(c.getNome()).append(", ");
+        }
+        return sb.toString();
+    }
 
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" Nome-");sb.append(this.nome);
+        sb.append(";\tCircuitos-");sb.append(circuitosToString()).append("\n");
+        return sb.toString();
     }
 }

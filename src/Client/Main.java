@@ -16,6 +16,7 @@ public class Main {
         try{
             while(running){
                 String recv = c.getNext();
+                //System.out.println(recv);
                 strArr = recv.split(":");
 
                 if("200".equals(strArr[0])){ //menu
@@ -23,10 +24,21 @@ public class Main {
                     op = m.run();
                     c.sendResponse(String.valueOf(op));
                     System.out.println("\n");
-                }else if("201".equals(strArr[0])){
+                }else if("201".equals(strArr[0])) {
                     System.out.println("Digite os campos pedidos separados por virgula");
                     System.out.println(strArr[1]);
                     c.sendResponse(sc.nextLine());
+                    System.out.println("\n");
+                }else if("202".equals(strArr[0])) {
+                    System.out.println("Digite os campos pedidos separados por virgula");
+                    System.out.println(strArr[1]);
+                    c.sendResponse(sc.nextLine());
+                    System.out.println("\n");
+                }else if("203".equals(strArr[0])){
+                    System.out.println(strArr[1]);
+                    System.out.println("\n");
+                }else if("205".equals(strArr[0])){
+                    System.out.println(strArr[1]);
                     System.out.println("\n");
                 }else if("300".equals(strArr[0])){
                     System.out.println("ERRO: "+strArr[1]);
@@ -42,9 +54,12 @@ public class Main {
                     System.out.println(strArr[1]);
                     System.out.println("\n");
                 }else if("101".equals(strArr[0])){
-                    System.out.println(strArr[1]);
+                    try {
+                        System.out.println(strArr[1]);
+                    }catch (ArrayIndexOutOfBoundsException e){
+                        System.out.println("Vazio");
+                    }
                     //System.in.read();
-                    System.out.println("\n");
                 }else{
                     System.out.println(Arrays.toString(strArr));
                     System.out.println("\n");
@@ -53,7 +68,6 @@ public class Main {
             }
         }
         catch(Exception e){
-            e.printStackTrace();
             System.out.println("Exiting...");
             sc.close();
         }

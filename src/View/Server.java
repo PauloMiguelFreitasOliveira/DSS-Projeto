@@ -180,9 +180,9 @@ class ClientThread extends Thread{
                                         .toString();
                                 sync = rmf.configCampeonato(usrEmail, map.get("Campeonato"), map.get("Carro"), map.get("Piloto"), map.get("NJogadores"), codigo);
                                 if (sync != null) {
-                                    os.writeUTF("202:Campeonato configurado\nCodigo: " + codigo);
+                                    os.writeUTF("203:Campeonato configurado\nCodigo- " + codigo);
                                     os.flush();
-                                    sync.waitCampeonato();
+                                    sync.waitCampeonato(usrEmail);
                                 } else {
                                     os.writeUTF("300:Configuracao de campeonato");
                                     os.flush();
@@ -196,7 +196,7 @@ class ClientThread extends Thread{
                                 if (sync != null) {
                                     os.writeUTF("100:Entrou no campeonato\n");
                                     os.flush();
-                                    sync.waitCampeonato();
+                                    sync.waitCampeonato(usrEmail);
                                 } else {
                                     os.writeUTF("300:A entrar no campeonato");
                                     os.flush();
@@ -226,66 +226,66 @@ class ClientThread extends Thread{
                             }
                         }
                     }
-                }
-                os.writeUTF("500");
-            }else{ //Admin
-                String list;
-                HashMap<String,String> map;
-                ArrayList<String> ll;
-                while (rmf.isLoggedIn(usrEmail)) {
-                    os.writeUTF(menuAdmin);
-                    os.flush();
-                    option = Integer.parseInt(is.readUTF());
-                    switch (option) {
-                        case 1 -> {
-                            os.writeUTF(addCampeonatoRequest);
-                            os.flush();
-                            ll = parseResp2(is.readUTF());
-                            String nome = ll.get(0);
-                            ll.remove(0);
-                            rmf.addCampeonato(nome,ll);
-                        }
-                        case 2 -> {
+                }else { //Admin
+                    String list;
+                    HashMap<String, String> map;
+                    ArrayList<String> ll;
+                    while (rmf.isLoggedIn(usrEmail)) {
+                        os.writeUTF(menuAdmin);
+                        os.flush();
+                        option = Integer.parseInt(is.readUTF());
+                        switch (option) {
+                            case 1 -> {
+                                os.writeUTF(addCampeonatoRequest);
+                                os.flush();
+                                ll = parseResp2(is.readUTF());
+                                String nome = ll.get(0);
+                                ll.remove(0);
+                                rmf.addCampeonato(nome, ll);
+                            }
+                            case 2 -> {
                             /*os.writeUTF(addCircuitoRequest);
                             os.flush();
                             map = parseResp(is.readUTF(), addCircuitoRequest.split(":")[1]);
                         */
-                        }
-                        case 3 -> {
-                            os.writeUTF(addPilotoRequest);
-                            os.flush();
-                            map = parseResp(is.readUTF(), addPilotoRequest.split(":")[1]);
-                            rmf.addPiloto(map.get("Nome"),map.get("Nacionalidade"),map.get("CTS"),map.get("SVA"));
-                        }
-                        case 4 -> {
-                            os.writeUTF(addCarroRequest);
-                            os.flush();
-                            map = parseResp(is.readUTF(), addCarroRequest.split(":")[1]);
-                            int pEletrico = 0;
-                            if(map.get("Classe").contains("H")){
-                                pEletrico = Integer.parseInt(map.get("PEletrico"));
                             }
-                            rmf.addCarro(map.get("Classe"),map.get("Marca"),map.get("Modelo"),map.get("Cilindrada"),map.get("Potencia"),pEletrico);
-                        }
-                        case 5 -> {
-                            sendListCampeonatos();
-                        }
-                        case 6 -> {
-                            sendListCircuitos();
-                        }
-                        case 7 -> {
-                            sendListPilotos();
-                        }
-                        case 8 -> {
-                            sendListCarros();
-                        }
-                        default -> {
-                            rmf.logout(usrEmail);
-                            os.writeUTF("500");
-                            os.flush();
+                            case 3 -> {
+                                os.writeUTF(addPilotoRequest);
+                                os.flush();
+                                map = parseResp(is.readUTF(), addPilotoRequest.split(":")[1]);
+                                rmf.addPiloto(map.get("Nome"), map.get("Nacionalidade"), map.get("CTS"), map.get("SVA"));
+                            }
+                            case 4 -> {
+                                os.writeUTF(addCarroRequest);
+                                os.flush();
+                                map = parseResp(is.readUTF(), addCarroRequest.split(":")[1]);
+                                int pEletrico = 0;
+                                if (map.get("Classe").contains("H")) {
+                                    pEletrico = Integer.parseInt(map.get("PEletrico"));
+                                }
+                                rmf.addCarro(map.get("Classe"), map.get("Marca"), map.get("Modelo"), map.get("Cilindrada"), map.get("Potencia"), pEletrico);
+                            }
+                            case 5 -> {
+                                sendListCampeonatos();
+                            }
+                            case 6 -> {
+                                sendListCircuitos();
+                            }
+                            case 7 -> {
+                                sendListPilotos();
+                            }
+                            case 8 -> {
+                                sendListCarros();
+                            }
+                            default -> {
+                                rmf.logout(usrEmail);
+                                os.writeUTF("500");
+                                os.flush();
+                            }
                         }
                     }
                 }
+                os.writeUTF("500");
             }
         }catch(SocketException e) {
             System.out.println("Client Exiting!");
@@ -314,8 +314,6 @@ class ClientThread extends Thread{
     public static HashMap<String,String> parseResp(String recv, String struct){
         String[] recvArr = recv.split(",");
         String[] structArr = struct.split(" ");
-        System.out.println(Arrays.toString(recvArr));
-        System.out.println(Arrays.toString(structArr));
 
         HashMap<String,String> aux = new HashMap<>();
         for(int i = 0; i < recvArr.length; i++){
@@ -326,7 +324,6 @@ class ClientThread extends Thread{
     public static ArrayList<String> parseResp2(String recv){
         String[] recvArr = recv.split(",");
         ArrayList<String> aux = new ArrayList<>(Arrays.asList(recvArr));
-        Collections.reverse(aux);
         return aux;
     }
 }

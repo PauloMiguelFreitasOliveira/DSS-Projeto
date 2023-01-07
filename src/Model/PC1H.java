@@ -21,6 +21,7 @@ public class PC1H extends PC1 implements Hibrido
     public PC1H(String marca, String modelo, int cilindrada, int potencia, int eletrico)
     {
         super(marca,modelo,cilindrada,potencia);
+        this.setFiabilidade(95);
         this.motor_eletrico = eletrico;
     }
     
@@ -48,10 +49,9 @@ public class PC1H extends PC1 implements Hibrido
     public boolean DNF(int volta,int totalvoltas,int clima)
     {
        Random rand=new Random();
-       int x=rand.nextInt(85);
-       int motorh = this.getPotenciaMotorEletrico()/20;     
+       int x=rand.nextInt(100);
+       int motorh = this.getPotenciaMotorEletrico()/30;
        return (x > (super.getFiabilidade()-motorh));
-       //return false;
     }
     
     public boolean equals(Object o)
